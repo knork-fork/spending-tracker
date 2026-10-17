@@ -8,6 +8,9 @@ parameters:
         - src/
         - tests/
     ignoreErrors:
+        - identifier: property.unusedType
+          paths:
+              - src/Entity/
         - identifier: staticMethod.alreadyNarrowedType
           paths:
               - tests/Unit/ExampleTest.php

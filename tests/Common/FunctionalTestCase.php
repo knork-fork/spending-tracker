@@ -11,6 +11,7 @@ abstract class FunctionalTestCase extends TestCase
 {
     private string $responseBody = '';
     private int $responseStatusCode = 0;
+    private string $responseRedirectUrl = '';
 
     /** @param non-empty-string $method */
     protected function request(string $method, string $uri): void
@@ -43,6 +44,24 @@ abstract class FunctionalTestCase extends TestCase
 
         $this->responseStatusCode = curl_getinfo($ch, \CURLINFO_HTTP_CODE);
         $this->responseBody = (string) $result;
+        $this->responseRedirectUrl = (string) curl_getinfo($ch, \CURLINFO_REDIRECT_URL);
+    }
+
+    protected function assertStatusCode(int $expected): void
+    {
+        self::assertSame($expected, $this->responseStatusCode);
+    }
+
+    protected function assertBodyContains(string $needle): void
+    {
+        self::assertStringContainsString($needle, $this->responseBody);
+    }
+
+    /** @param non-empty-string $path */
+    protected function assertRedirectsTo(string $path): void
+    {
+        self::assertSame(302, $this->responseStatusCode);
+        self::assertStringEndsWith($path, $this->responseRedirectUrl);
     }
 
     /** @param array<string, mixed> $expected */

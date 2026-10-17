@@ -1,4 +1,5 @@
 parameters:
+    app.invite_secret: '%env(INVITE_SECRET)%'
 
 services:
     _defaults:
