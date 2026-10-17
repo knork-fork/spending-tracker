@@ -1,0 +1,22 @@
+{% extends 'app/layout.html.twig' %}
+{% import 'app/_icons.html.twig' as icons %}
+
+{% set active_nav = 'sync' %}
+
+{% block title %}Choose bank - Spending Tracker{% endblock %}
+
+{% block content %}
+    <a href="{{ path('app_sync') }}" class="back-link">{{ icons.icon('back') }} Back</a>
+
+    <div class="page-header">
+        <h1>Choose your bank</h1>
+        <p>Pick the bank you want to import transactions from</p>
+    </div>
+
+    <div class="bank-grid">
+        <button type="button" class="bank-tile">
+            <img src="{{ asset('images/banks/otpbanka.jpg') }}" alt="">
+            OTP banka (HR)
+        </button>
+    </div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'app/layout.html.twig' %}
+
+{% set active_nav = 'settings' %}
+
+{% block title %}Users - Spending Tracker{% endblock %}
+
+{% block content %}
+    {% include 'settings/_tabs.html.twig' with {active_tab: 'users'} only %}
+
+    <section class="panel-card form-narrow" style="margin-bottom: 24px">
+        <h2>Country</h2>
+
+        {% for message in app.flashes('country_success') %}
+            <div class="alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {{ form_start(countryForm) }}
+            <div class="field">
+                {{ form_label(countryForm.country) }}
+                {{ form_widget(countryForm.country) }}
+                <div class="form-errors">{{ form_errors(countryForm.country) }}</div>
+            </div>
+
+            <button type="submit" class="btn-shell">Save country</button>
+        {{ form_end(countryForm) }}
+    </section>
+
+    <section class="panel-card form-narrow">
+        <h2>Change password</h2>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert-success">{{ message }}</div>
+        {% endfor %}
+
+        {{ form_start(changePasswordForm) }}
+            {% for field in [changePasswordForm.currentPassword, changePasswordForm.newPassword.first, changePasswordForm.newPassword.second] %}
+                <div class="field">
+                    {{ form_label(field) }}
+                    {{ form_widget(field) }}
+                    <div class="form-errors">{{ form_errors(field) }}</div>
+                </div>
+            {% endfor %}
+            <div class="form-errors" style="margin-bottom: 12px">{{ form_errors(changePasswordForm.newPassword) }}</div>
+
+            <button type="submit" class="btn-shell">Change password</button>
+        {{ form_end(changePasswordForm) }}
+    </section>
+{% endblock %}

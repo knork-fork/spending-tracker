@@ -1,0 +1,9 @@
+{% extends 'app/layout.html.twig' %}
+
+{% set active_nav = 'settings' %}
+
+{% block title %}Classes - Spending Tracker{% endblock %}
+
+{% block content %}
+    {% include 'settings/_tabs.html.twig' with {active_tab: 'classes'} only %}
+{% endblock %}

@@ -1,0 +1,447 @@
+{% extends 'base.html.twig' %}
+{% import 'app/_icons.html.twig' as icons %}
+
+{% set username = app.user ? app.user.userIdentifier : '' %}
+{% set nav_items = [
+    {key: 'home', label: 'Home', route: 'app_home'},
+    {key: 'expenses', label: 'Expenses', route: 'app_expenses'},
+    {key: 'sync', label: 'Sync', route: 'app_sync'},
+    {key: 'settings', label: 'Settings', route: 'app_settings'},
+] %}
+
+{% block stylesheets %}
+    <style>
+        :root {
+            --shell: #3226ae;
+            --shell-active: rgba(255, 255, 255, 0.28);
+            --panel: #f4f7fc;
+            --orange: #ff9f55;
+        }
+
+        .app-shell {
+            min-height: 100vh;
+            display: flex;
+            background: var(--shell);
+            padding: 10px 10px 10px 0;
+        }
+
+        .sidebar {
+            width: 88px;
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 28px 0 24px;
+            gap: 14px;
+        }
+
+        .avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e8703a, #ff9f55);
+            color: #ffffff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            flex: 1;
+        }
+
+        .sidebar a.nav-link,
+        .sidebar button.nav-link {
+            width: 52px;
+            height: 52px;
+            padding: 0;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.78);
+            background: transparent;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.14);
+            color: #ffffff;
+        }
+
+        .sidebar .nav-link.active {
+            background: var(--shell-active);
+            color: #ffffff;
+        }
+
+        .main-panel {
+            flex: 1;
+            min-width: 0;
+            background: var(--panel);
+            border-radius: 28px;
+            padding: 36px 44px 44px;
+        }
+
+        .page-header h1 {
+            text-align: left;
+            font-size: 1.6rem;
+            margin: 0;
+        }
+
+        .page-header p {
+            margin: 4px 0 28px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .panel-card {
+            background: var(--surface);
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .panel-card h2 {
+            margin: 0 0 16px;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .sync-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            margin-bottom: 24px;
+            background: linear-gradient(120deg, #3226ae, #5a45e0 60%, #ff9f55 130%);
+            color: #ffffff;
+            border-radius: 18px;
+            padding: 28px 36px;
+        }
+
+        .sync-hero h2 {
+            margin: 0 0 6px;
+            font-size: 1.4rem;
+        }
+
+        .sync-hero p {
+            margin: 0;
+            opacity: 0.85;
+        }
+
+        .btn-hero {
+            width: auto;
+            flex: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            border-radius: 14px;
+            background: #ffffff;
+            color: var(--shell);
+        }
+
+        .btn-hero:hover {
+            background: #ece9ff;
+        }
+
+        .dash-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+            gap: 24px;
+        }
+
+        .chart-svg {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .chart-svg text {
+            fill: var(--text-faint);
+            font-size: 11px;
+            font-family: inherit;
+        }
+
+        .donut-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .donut-wrap svg {
+            width: 180px;
+            height: 180px;
+        }
+
+        .donut-total {
+            font-size: 22px;
+            font-weight: 700;
+            fill: var(--text);
+        }
+
+        .legend {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            display: grid;
+            gap: 10px;
+        }
+
+        .legend li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .legend .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex: none;
+        }
+
+        .legend .amount {
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .empty-state {
+            color: var(--text-muted);
+            padding: 40px 0;
+            text-align: center;
+        }
+
+        .choice-stage {
+            min-height: 60vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 32px;
+            flex-wrap: wrap;
+        }
+
+        .choice-btn {
+            width: 320px;
+            height: 220px;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-size: 1.35rem;
+            font-weight: 700;
+            background: var(--surface);
+            color: var(--shell);
+            border: 2px solid var(--shell);
+            box-shadow: var(--card-shadow);
+            text-decoration: none;
+        }
+
+        .choice-btn svg {
+            width: 44px;
+            height: 44px;
+        }
+
+        a.choice-btn:hover {
+            background: var(--shell);
+            color: #ffffff;
+        }
+
+        .choice-btn[aria-disabled="true"] {
+            border-color: var(--border-strong);
+            color: var(--text-faint);
+            background: var(--surface-raised);
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--shell);
+            font-weight: 600;
+            text-decoration: none;
+            margin-bottom: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .bank-grid {
+            display: flex;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .bank-tile {
+            width: 240px;
+            padding: 20px;
+            border-radius: 18px;
+            background: var(--surface);
+            border: 2px solid var(--border);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .bank-tile:hover {
+            border-color: var(--shell);
+        }
+
+        .bank-tile img {
+            width: 100%;
+            max-height: 110px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+
+        .tabs a {
+            padding: 10px 18px;
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -1px;
+        }
+
+        .tabs a.active {
+            color: var(--shell);
+            border-bottom-color: var(--shell);
+        }
+
+        select {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface-raised);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 0.95rem;
+            font-family: inherit;
+        }
+
+        .chart-wrap {
+            position: relative;
+        }
+
+        .chart-hover {
+            pointer-events: none;
+        }
+
+        .chart-hover[hidden] {
+            display: none;
+        }
+
+        .chart-tip {
+            fill: #d9424e;
+        }
+
+        .chart-svg .chart-tip-text {
+            fill: #ffffff;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .donut-seg {
+            transition: opacity 0.15s;
+            cursor: pointer;
+        }
+
+        .donut-wrap.hovering .donut-seg:not(.hover) {
+            opacity: 0.35;
+        }
+
+        .donut-label {
+            font-size: 11px;
+            fill: var(--text-muted);
+        }
+
+        .form-narrow {
+            max-width: 380px;
+        }
+
+        .btn-shell {
+            background: var(--shell);
+            color: #ffffff;
+        }
+
+        .btn-shell:hover {
+            background: #271e8c;
+        }
+
+        .alert-success {
+            background: #e6f6ec;
+            color: #1c7a3f;
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 900px) {
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .sync-hero {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .main-panel {
+                padding: 24px 20px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="avatar" title="{{ username }}">{{ username|slice(0, 2) }}</div>
+
+            <nav class="sidebar-nav">
+                {% for item in nav_items %}
+                    <a href="{{ path(item.route) }}"
+                       class="nav-link{{ active_nav|default('') == item.key ? ' active' : '' }}"
+                       title="{{ item.label }}"
+                       aria-label="{{ item.label }}">{{ icons.icon(item.key) }}</a>
+                {% endfor %}
+            </nav>
+
+            <a href="{{ path('app_logout') }}" class="nav-link" title="Log out" aria-label="Log out">{{ icons.icon('logout') }}</a>
+        </aside>
+
+        <main class="main-panel">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+{% endblock %}

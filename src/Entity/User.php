@@ -30,6 +30,9 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 180, nullable: true)]
     private ?string $email = null;
 
+    #[ORM\Column(length: 2, nullable: true, options: ['fixed' => true])]
+    private ?string $country = null;
+
     #[ORM\Column(name: 'created_at')]
     private DateTimeImmutable $createdAt;
 
@@ -84,6 +87,18 @@ final class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEmail(?string $email): static
     {
         $this->email = $email;
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(?string $country): static
+    {
+        $this->country = $country;
 
         return $this;
     }

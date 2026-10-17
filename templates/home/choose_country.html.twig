@@ -1,0 +1,13 @@
+{% extends 'app/layout.html.twig' %}
+
+{% set active_nav = 'home' %}
+
+{% block title %}Home - Spending Tracker{% endblock %}
+
+{% block content %}
+    <div class="choice-stage">
+        <a href="{{ path('app_settings_users') }}" class="choice-btn">
+            Choose country
+        </a>
+    </div>
+{% endblock %}

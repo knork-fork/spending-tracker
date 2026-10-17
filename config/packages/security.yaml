@@ -33,4 +33,4 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/signup, roles: PUBLIC_ACCESS }
         - { path: ^/status, roles: PUBLIC_ACCESS }
-        - { path: ^/$, roles: ROLE_USER }
+        - { path: ^/, roles: ROLE_USER }

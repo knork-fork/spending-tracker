@@ -1,11 +1,141 @@
-{% extends 'base.html.twig' %}
+{% extends 'app/layout.html.twig' %}
+{% import 'app/_icons.html.twig' as icons %}
+
+{% set active_nav = 'home' %}
 
 {% block title %}Home - Spending Tracker{% endblock %}
 
-{% block body %}
-    <div class="auth-shell">
-        <div style="width: 100%; max-width: 380px;">
-            <a href="{{ path('app_logout') }}" class="btn btn-primary">Log out</a>
-        </div>
+{% block content %}
+    <div class="page-header">
+        <h1>My Activity</h1>
+        <p>Check your expenses here</p>
     </div>
+
+    <section class="sync-hero">
+        <div>
+            <h2>Bring in your latest transactions</h2>
+            <p>Sync your bank to keep your expenses up to date.</p>
+        </div>
+        <a href="{{ path('app_sync') }}" class="btn btn-hero">{{ icons.icon('sync') }} Sync</a>
+    </section>
+
+    <div class="dash-grid">
+        <section class="panel-card">
+            <h2>Expenses over time</h2>
+            <svg class="chart-svg" id="line-chart" viewBox="0 0 {{ chartWidth }} {{ chartHeight }}" role="img" aria-label="Monthly expenses line chart (sample data)">
+                <defs>
+                    <linearGradient id="area-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stop-color="#d9424e" stop-opacity="0.22"/>
+                        <stop offset="1" stop-color="#d9424e" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                {% for tick in chart.axis %}
+                    <line x1="{{ chartPadLeft }}" x2="{{ chartWidth - chartPadRight }}" y1="{{ tick.y }}" y2="{{ tick.y }}" stroke="#d4dbe7" stroke-dasharray="3 4"/>
+                    <text x="{{ chartPadLeft - 8 }}" y="{{ tick.y + 4 }}" text-anchor="end">€{{ tick.label }}</text>
+                {% endfor %}
+                <path d="{{ chart.area }}" fill="url(#area-fill)"/>
+                <path d="{{ chart.line }}" fill="none" stroke="#d9424e" stroke-width="2.5" stroke-linecap="round"/>
+                {% for label in chart.labels %}
+                    <text x="{{ label.x }}" y="{{ chartBaseline + 20 }}" text-anchor="middle">{{ label.text }}</text>
+                {% endfor %}
+                <g class="chart-hover" id="chart-hover" hidden>
+                    <line id="hover-line" y1="12" y2="{{ chartBaseline }}" stroke="#d9424e" stroke-opacity="0.4"/>
+                    <g id="hover-tip">
+                        <rect class="chart-tip" id="hover-tip-bg" height="22" rx="6"/>
+                        <text class="chart-tip-text" id="hover-tip-text" text-anchor="middle"></text>
+                        <path class="chart-tip" id="hover-tip-arrow" d=""/>
+                    </g>
+                    <circle id="hover-dot" r="6" fill="#d9424e" stroke="#ffffff" stroke-width="2.5"/>
+                </g>
+            </svg>
+        </section>
+
+        <section class="panel-card">
+            <h2>Last month's breakdown</h2>
+            <div class="donut-wrap" id="donut-wrap">
+                <svg viewBox="0 0 200 200" role="img" aria-label="Last month expense breakdown (sample data)">
+                    <g transform="rotate(-90 100 100)">
+                        {% for segment in donut %}
+                            <circle class="donut-seg" data-label="{{ segment.label }}" data-amount="{{ segment.amount }}" cx="100" cy="100" r="{{ donutRadius }}" fill="none"
+                                    stroke="{{ segment.color }}" stroke-width="28"
+                                    stroke-dasharray="{{ segment.dash }} {{ segment.gap }}"
+                                    stroke-dashoffset="{{ segment.offset }}"/>
+                        {% endfor %}
+                    </g>
+                    <text x="100" y="94" text-anchor="middle" class="donut-label" id="donut-label">Total</text>
+                    <text x="100" y="116" text-anchor="middle" class="donut-total" id="donut-value" data-total="€{{ breakdownTotal }}">€{{ breakdownTotal }}</text>
+                </svg>
+                <ul class="legend">
+                    {% for item in breakdown %}
+                        <li>
+                            <span class="dot" style="background: {{ item.color }}"></span>
+                            <span>{{ item.label }}</span>
+                            <span class="amount">€{{ item.amount }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script>
+        (function () {
+            var points = {{ chart.points|json_encode|raw }};
+            var svg = document.getElementById('line-chart');
+            var hover = document.getElementById('chart-hover');
+            var dot = document.getElementById('hover-dot');
+            var line = document.getElementById('hover-line');
+            var tipBg = document.getElementById('hover-tip-bg');
+            var tipText = document.getElementById('hover-tip-text');
+            var tipArrow = document.getElementById('hover-tip-arrow');
+
+            svg.addEventListener('mousemove', function (event) {
+                var rect = svg.getBoundingClientRect();
+                var x = (event.clientX - rect.left) * ({{ chartWidth }} / rect.width);
+                var nearest = points[0];
+                points.forEach(function (p) {
+                    if (Math.abs(p.x - x) < Math.abs(nearest.x - x)) { nearest = p; }
+                });
+
+                var text = nearest.label + ' · €' + nearest.value;
+                var width = text.length * 7 + 18;
+                var tipX = Math.min(Math.max(nearest.x, width / 2 + 2), {{ chartWidth }} - width / 2 - 2);
+                var tipY = Math.max(nearest.y - 40, 0);
+
+                dot.setAttribute('cx', nearest.x);
+                dot.setAttribute('cy', nearest.y);
+                line.setAttribute('x1', nearest.x);
+                line.setAttribute('x2', nearest.x);
+                tipBg.setAttribute('x', tipX - width / 2);
+                tipBg.setAttribute('y', tipY);
+                tipBg.setAttribute('width', width);
+                tipText.setAttribute('x', tipX);
+                tipText.setAttribute('y', tipY + 15);
+                tipText.textContent = text;
+                tipArrow.setAttribute('d', 'M' + (nearest.x - 5) + ',' + (tipY + 22) + ' L' + (nearest.x + 5) + ',' + (tipY + 22) + ' L' + nearest.x + ',' + (tipY + 29) + ' Z');
+                hover.removeAttribute('hidden');
+            });
+            svg.addEventListener('mouseleave', function () { hover.setAttribute('hidden', ''); });
+
+            var wrap = document.getElementById('donut-wrap');
+            var label = document.getElementById('donut-label');
+            var value = document.getElementById('donut-value');
+            wrap.querySelectorAll('.donut-seg').forEach(function (seg) {
+                seg.addEventListener('mouseenter', function () {
+                    wrap.classList.add('hovering');
+                    seg.classList.add('hover');
+                    label.textContent = seg.dataset.label;
+                    value.textContent = '€' + seg.dataset.amount;
+                });
+                seg.addEventListener('mouseleave', function () {
+                    wrap.classList.remove('hovering');
+                    seg.classList.remove('hover');
+                    label.textContent = 'Total';
+                    value.textContent = value.dataset.total;
+                });
+            });
+        })();
+    </script>
 {% endblock %}

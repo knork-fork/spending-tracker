@@ -1,0 +1,19 @@
+{% extends 'app/layout.html.twig' %}
+{% import 'app/_icons.html.twig' as icons %}
+
+{% set active_nav = 'sync' %}
+
+{% block title %}Sync - Spending Tracker{% endblock %}
+
+{% block content %}
+    <div class="choice-stage">
+        <a href="{{ path('app_sync_bank') }}" class="choice-btn">
+            {{ icons.icon('bank') }}
+            Import from bank
+        </a>
+        <span class="choice-btn" aria-disabled="true" title="Not available yet">
+            {{ icons.icon('edit') }}
+            Import manually
+        </span>
+    </div>
+{% endblock %}
