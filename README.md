@@ -1,6 +1,6 @@
 # spending-tracker
 
-A web app for tracking personal spending, with invite-only signup.
+A web app for tracking personal spending.
 
 ## Setup
 
