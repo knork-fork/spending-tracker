@@ -1,0 +1,11 @@
+- get real json from OTP e-banking, use as dummy values for importing
+- move "OTP (HR)" behind country=Croatia flag
+- insert and display dummy values with category always set to "Other"
+- ask and track category classes on import and add a button for re-categorizing
+  - workflow: import data, categorize, what can't be categorized raise to user so new class is saved
+  - classes available in Settings->Classes
+- encrypt with user's password all transaction values, transaction descriptions and category labels, decrypted on the go on frontend
+  - leave a "cache" so previous months don't have to get decrypted and calculated on the fly, but encrypt cache as well
+- find a way to import real values from OTP e-banking
+  - it's a json request that needs a valid session id
+  - OTP implementation needs to stay specific to that single bank, organize folders so this is reflected
