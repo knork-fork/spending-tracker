@@ -21,3 +21,119 @@ Uncategorized ako još nije postavljena kategorija.
 Negdje treba bit categorize gumb - idealno bi bilo da za Uncategorized postoji posebno, ali za sve transakcije treba moć kategorizirat.
 Gore desno treba bit sync i add transaction manually.
 Za postojeće klase kategorija treba postojat backfill gumb, da se kategoriziraju i transakcije od prije.
+
+
+-----------------
+
+example OTP bank request for 
+
+URL:
+https://elementa.otpbanka.hr/gradjaniNG/OTPdirekt/uo_promet/f_knjizenja_get_page?as_session=<SESSION_ID>&str_sess=<SESSION_TOKEN>&lang=HR&lista_drop=&draw=1&columns%5B0%5D%5Bdata%5D=0&columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=true&columns%5B0%5D%5Borderable%5D=false&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=1&columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=true&columns%5B1%5D%5Borderable%5D=false&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=2&columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=true&columns%5B2%5D%5Borderable%5D=false&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=3&columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=true&columns%5B3%5D%5Borderable%5D=false&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&start=0&length=100&search%5Bvalue%5D=&search%5Bregex%5D=false&transaction_id=<TRANSACTION_ID>&flags=8%3Btrue&_=1792770648217
+
+example transaction data:
+```
+{
+   "recordsTotal":8,
+   "recordsFiltered":8,
+   "data":[
+      [
+         "08.10.2026",
+         "08.10.2026",
+         "POS kupovina-UBER *TRIP HELP.UBER.C/AMSTERDAM/NLD (07/10/2026 10:05h, ACode:******, kartica:****)",
+         "-8,94"
+      ],
+      [
+         "08.10.2026",
+         " ",
+         "Stanje",
+         "1.348,10"
+      ],
+      [
+         "10.10.2026",
+         "10.10.2026",
+         "POS kupovina-KFC AMREST ADRIA/ZAGREB/HRV (09/10/2026 12:33h, ACode:******, kartica:****)",
+         "-17,89"
+      ],
+      [
+         "10.10.2026",
+         " ",
+         "Stanje",
+         "1.330,21"
+      ],
+      [
+         "12.10.2026",
+         "12.10.2026",
+         "Naknada za paket",
+         "-2,65"
+      ],
+      [
+         "12.10.2026",
+         "12.10.2026",
+         "POS kupovina-REVOLUT*******/DUBLIN/IRL (10/10/2026 16:15h, ACode:******, kartica:****)",
+         "-40,00"
+      ],
+      [
+         "12.10.2026",
+         "12.10.2026",
+         "Prijenos",
+         "-15,00"
+      ],
+      [
+         "12.10.2026",
+         " ",
+         "Stanje",
+         "1.272,56"
+      ]
+   ]
+}
+```
+
+
+creating transaction_id:
+```
+curl 'https://elementa.otpbanka.hr/gradjaniNG/OTPdirekt/uo_promet/f_knjizenja' \
+  -X POST \
+  --data-raw 'as_session=<SESSION_DATA>&str_sess=<SESSION_DATA>&lang=HR&lista_drop=&kw_caac=<BANK_ACCOUNT_ID>&datum_od=08.10.2026&datum_do=13.10.2026&sort=1&iznos_od=&iznos_do=&opis=&action=m_stanje_racuna'
+```
+response from creating transaction id-a (relevant part):
+```
+...   
+<script>
+...
+    
+    setTimeout(function(){     
+      $('#promet').DataTable( {
+        responsive: true, 
+        "bSort": false,
+        "bFilter": false,
+        "bLengthChange": false,
+        "bInfo": false,
+        "processing": false,
+        "serverSide": true,
+        "dom": '<"top"iflp<"clear">>rt<"bottom"iflp<"clear">>',
+        "pageLength": 100,
+        "iDisplayStart": 0,
+         "ajax": {
+          "url": "/gradjaniNG/OTPdirekt/uo_promet/f_knjizenja_get_page?"+$('#mainForm').serialize(),
+          "type": "GET", 
+          data: {
+            "transaction_id": "-110",
+            "flags": "8;true"
+          },
+          error: function (xhr, error, thrown) {
+            
+          }
+        },...
+   
+...
+</script>
+```
+
+how the OTP direkt import works (summary):
+- the user supplies as_session, str_sess and kw_caac (bank account id). No cookie and no browser headers needed.
+- step 1: POST f_knjizenja with the full form body (as_session, str_sess, lang, lista_drop, kw_caac, datum_od, datum_do, sort, iznos_od, iznos_do, opis, action=m_stanje_racuna).
+  The server stores the account + date range server-side and creates a new transaction_id (e.g. -110) on every search ("Prikazi" click).
+  It is returned in the response inside the DataTables script: "transaction_id": "-110" (flags is "8;true").
+- step 2: GET f_knjizenja_get_page with as_session, str_sess, transaction_id, flags, start, length. kw_caac and the dates are NOT sent here;
+  the transaction_id alone decides which account and date range are returned. Page with start=0,100,200... until a page has fewer than length rows.
+- the transaction_id is per search: never reuse it for another account/range and never persist it, scrape it and use it immediately.
