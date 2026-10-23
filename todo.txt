@@ -9,3 +9,8 @@
 - find a way to import real values from OTP e-banking
   - it's a json request that needs a valid session id
   - OTP implementation needs to stay specific to that single bank, organize folders so this is reflected
+
+
+za spending tracker, za klasifikaciju dodat da se može ili po tekstu ili po iznosu, možda neki if builder sa and i or, vidi expressione i filtere u giscloudu
+također da se može one-time stavit kategorija bez filtriranja drugih
+i rastavit jednu transakciju na više kategorija, po postotcima
