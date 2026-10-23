@@ -14,3 +14,10 @@
 za spending tracker, za klasifikaciju dodat da se može ili po tekstu ili po iznosu, možda neki if builder sa and i or, vidi expressione i filtere u giscloudu
 također da se može one-time stavit kategorija bez filtriranja drugih
 i rastavit jednu transakciju na više kategorija, po postotcima
+
+U expenses tab dodat po defaultu da ispisuje trenutni mjesec. Može se selectat prijašnje.
+Izlistano je transakcija po transakcija (najnovija gore), sa strane piše koja je kategorija.
+Uncategorized ako još nije postavljena kategorija.
+Negdje treba bit categorize gumb - idealno bi bilo da za Uncategorized postoji posebno, ali za sve transakcije treba moć kategorizirat.
+Gore desno treba bit sync i add transaction manually.
+Za postojeće klase kategorija treba postojat backfill gumb, da se kategoriziraju i transakcije od prije.
